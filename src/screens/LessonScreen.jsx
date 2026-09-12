@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,6 +11,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Accelerometer } from 'expo-sensors';
+import * as Haptics from 'expo-haptics';
 import { GradientBackground } from '../components/GradientBackground';
 import { MagicButton } from '../components/MagicButton';
 import { ProgressBar } from '../components/ProgressBar';
@@ -33,18 +36,57 @@ export function LessonScreen() {
   const [finished, setFinished] = useState(false);
   const [rewarded, setRewarded] = useState(false);
 
+  const currentGRef = useRef(1.0);
+
+  // Monitoramento de aceleração para trava por instabilidade física (Nível Pleno)
+  useEffect(() => {
+    let subscription;
+    (async () => {
+      try {
+        const available = await Accelerometer.isAvailableAsync();
+        if (available) {
+          Accelerometer.setUpdateInterval(100);
+          subscription = Accelerometer.addListener((data) => {
+            currentGRef.current = Math.sqrt(
+              data.x * data.x + data.y * data.y + data.z * data.z
+            );
+          });
+        }
+      } catch {}
+    })();
+
+    return () => {
+      if (subscription) subscription.remove();
+    };
+  }, []);
+
   if (!trail || !lesson) return null;
   const exercises = lesson.exercises;
   const current = exercises[index];
   const isLast = index === exercises.length - 1;
 
   const handleAdvance = () => {
+    // Nível Pleno: Trava de segurança por movimentação brusca (> 2.0g)
+    if (currentGRef.current > 2.0) {
+      Alert.alert(
+        'Instabilidade Física Detectada',
+        `A aceleração vetorial agregada ultrapassou 2.0g (${currentGRef.current.toFixed(2)}g). A submissão da lição foi bloqueada temporariamente para estabilização do dispositivo.`
+      );
+      try {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } catch {}
+      return;
+    }
+
     if (isLast) {
       setFinished(true);
       if (!rewarded && lesson) {
         setRewarded(true);
         markComplete(lesson.id);
         addPoints(lesson.points);
+        try {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } catch {}
       }
     } else {
       setIndex((i) => i + 1);

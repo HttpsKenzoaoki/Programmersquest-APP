@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,6 +26,8 @@ import { colors, radii, spacing, typography } from '../theme';
 
 export function ProfileScreen() {
   const navigation = useNavigation();
+  const { width } = useWindowDimensions();
+  const isLandscape = width > 600;
   const user = useAuthStore((s) => s.user);
   const updateProfile = useAuthStore((s) => s.updateProfile);
   const logout = useAuthStore((s) => s.logout);
@@ -28,23 +39,95 @@ export function ProfileScreen() {
   if (!user) return null;
   const league = getLeagueForPoints(user.points);
 
-  const pickAvatar = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
+  const pickAvatar = () => {
+    Alert.alert(
+      'Foto de Perfil',
+      'Como você deseja definir seu avatar?',
+      [
+        { text: '📷 Tirar Foto (Câmera)', onPress: takePhotoWithCamera },
+        { text: '🖼️ Escolher da Galeria', onPress: pickFromGallery },
+        { text: 'Cancelar', style: 'cancel' },
+      ]
+    );
+  };
+
+  // Nível Júnior: Tratamento avançado de permissões negadas na Câmera
+  const takePhotoWithCamera = async () => {
+    try {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (!perm.granted) {
+        if (perm.canAskAgain === false) {
+          Alert.alert(
+            'Permissão da Câmera Bloqueada',
+            'O acesso à câmera foi marcado como "Não perguntar novamente". Para tirar uma foto, abra as configurações do sistema operacional e ative a permissão manualmente.',
+            [
+              { text: 'Cancelar', style: 'cancel' },
+              {
+                text: 'Abrir Configurações',
+                onPress: () => Linking.openSettings(),
+              },
+            ]
+          );
+        } else {
+          Alert.alert(
+            'Permissão necessária',
+            'O acesso à câmera é necessário para tirar a foto do seu avatar.'
+          );
+        }
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]?.uri) {
+        await updateProfile({ avatarUri: result.assets[0].uri });
+      }
+    } catch (error) {
+      // RNF01: Degradação graciosa
       Alert.alert(
-        'Permissão necessária',
-        'Precisamos acessar sua galeria para escolher a foto de perfil.',
+        'Câmera Indisponível',
+        'Não foi possível inicializar a câmera neste aparelho. Verifique se o recurso de hardware está disponível.'
       );
-      return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      await updateProfile({ avatarUri: result.assets[0].uri });
+  };
+
+  const pickFromGallery = async () => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        if (perm.canAskAgain === false) {
+          Alert.alert(
+            'Permissão da Galeria Bloqueada',
+            'O acesso às fotos foi bloqueado. Abra as configurações do sistema operacional para permitir o acesso.',
+            [
+              { text: 'Cancelar', style: 'cancel' },
+              { text: 'Abrir Configurações', onPress: () => Linking.openSettings() },
+            ]
+          );
+        } else {
+          Alert.alert(
+            'Permissão necessária',
+            'Precisamos acessar sua galeria para escolher a foto de perfil.'
+          );
+        }
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets[0]?.uri) {
+        await updateProfile({ avatarUri: result.assets[0].uri });
+      }
+    } catch (error) {
+      Alert.alert('Erro ao acessar galeria', error.message || 'Falha ao selecionar imagem.');
     }
   };
 
@@ -117,15 +200,30 @@ export function ProfileScreen() {
             </Card>
           </View>
 
-          <Text style={styles.sectionTitle}>Configurações</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
+          <Text style={styles.sectionTitle}>Recursos Nativos & Desafios</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Audit')}>
             <Card style={styles.optionRow}>
-              <Text style={styles.optionIcon}>💬</Text>
-              <Text style={styles.optionText}>Fale conosco / reportar problema</Text>
+              <Text style={styles.optionIcon}>📡</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.optionText}>Auditoria Técnica de Campo</Text>
+                <Text style={styles.optionSubtext}>GPS c/ precisão + Acelerômetro + Histórico Offline</Text>
+              </View>
               <Text style={styles.optionArrow}>›</Text>
             </Card>
           </TouchableOpacity>
 
+          <TouchableOpacity onPress={() => navigation.navigate('Contact')}>
+            <Card style={styles.optionRow}>
+              <Text style={styles.optionIcon}>👥</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.optionText}>Agenda Corporativa (Contatos)</Text>
+                <Text style={styles.optionSubtext}>Busca nativa em massa + paginação + FlatList</Text>
+              </View>
+              <Text style={styles.optionArrow}>›</Text>
+            </Card>
+          </TouchableOpacity>
+
+          <Text style={styles.sectionTitle}>Conta</Text>
           <MagicButton title="Sair da conta" onPress={handleLogout} variant="ghost" />
         </ScrollView>
       </SafeAreaView>
@@ -173,6 +271,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   optionIcon: { fontSize: 22 },
-  optionText: { flex: 1, color: colors.text, fontSize: typography.body },
+  optionText: { color: colors.text, fontSize: typography.body, fontWeight: '600' },
+  optionSubtext: { color: colors.textMuted, fontSize: typography.caption, marginTop: 2 },
   optionArrow: { color: colors.textFaint, fontSize: 24 },
 });

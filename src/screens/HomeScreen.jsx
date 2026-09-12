@@ -52,6 +52,24 @@ export function HomeScreen() {
             </Card>
           </View>
 
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('Audit')}
+            style={{ marginBottom: spacing.xl }}>
+            <Card glow style={styles.auditBanner}>
+              <View style={styles.auditBannerIcon}>
+                <Text style={{ fontSize: 26 }}>📡</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.auditBannerTitle}>Auditoria Técnica & Telemetria</Text>
+                <Text style={styles.auditBannerSub}>
+                  Recursos Nativos: GPS c/ Precisão, Acelerômetro e Histórico Offline
+                </Text>
+              </View>
+              <Text style={{ color: colors.primaryLight, fontSize: 22, fontWeight: '700' }}>›</Text>
+            </Card>
+          </TouchableOpacity>
+
           <Text style={styles.sectionTitle}>Trilhas de aprendizado</Text>
           <Text style={styles.sectionSub}>Escolha um caminho e evolua sua magia</Text>
 
@@ -130,4 +148,21 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   trailProgressText: { color: colors.textFaint, fontSize: typography.small },
+  auditBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: '#160D2E',
+    borderColor: colors.primary,
+  },
+  auditBannerIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radii.md,
+    backgroundColor: colors.primary + '33',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  auditBannerTitle: { color: colors.text, fontSize: typography.body, fontWeight: '700' },
+  auditBannerSub: { color: colors.textMuted, fontSize: typography.caption, marginTop: 2 },
 });

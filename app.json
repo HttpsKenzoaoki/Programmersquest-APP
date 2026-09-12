@@ -3,7 +3,7 @@
     "name": "Programmers Quest",
     "slug": "Programmersquest-APP",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0B0618",
@@ -33,7 +33,20 @@
         "expo-image-picker",
         {
           "photosPermission": "O Programmers Quest acessa suas fotos para você escolher seu avatar de perfil.",
+          "cameraPermission": "O Programmers Quest utiliza a câmera para você registrar fotos no perfil e nas auditorias de campo.",
           "microphonePermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "O Programmers Quest necessita de acesso à sua localização para registrar coordenadas e precisão GPS nas visitas técnicas."
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "O Programmers Quest acessa seus contatos corporativos para integração e comunicação da equipe."
         }
       ]
     ]

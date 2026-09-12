@@ -11,6 +11,7 @@ import { LessonScreen } from '../screens/LessonScreen';
 import { LeaguesScreen } from '../screens/LeaguesScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { ContactScreen } from '../screens/ContactScreen';
+import { AuditScreen } from '../screens/AuditScreen';
 import { colors, spacing } from '../theme';
 
 const RootStack = createNativeStackNavigator();
@@ -45,6 +46,7 @@ function HomeNavigator() {
       <HomeStack.Screen name="Home" component={HomeScreen} />
       <HomeStack.Screen name="Trail" component={TrailScreen} />
       <HomeStack.Screen name="Lesson" component={LessonScreen} />
+      <HomeStack.Screen name="Audit" component={AuditScreen} />
     </HomeStack.Navigator>
   );
 }
@@ -95,6 +97,7 @@ export function RootNavigator() {
         {user ? (
           <>
             <RootStack.Screen name="Main" component={MainTabs} />
+            <RootStack.Screen name="Audit" component={AuditScreen} />
             <RootStack.Screen
               name="Contact"
               component={ContactScreen}
