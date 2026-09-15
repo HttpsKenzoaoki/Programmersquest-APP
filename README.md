@@ -5,6 +5,10 @@
 
 O **Programmer's Quest** é um aplicativo mobile gamificado com temática de fantasia e magia, projetado para ensinar conceitos de programação de forma interativa. Além da sua mecânica de trilhas, lições e execução de código, o projeto integra múltiplos **recursos nativos de hardware** do dispositivo, atendendo rigorosamente aos requisitos do Code Challenge e aos pilares de Engenharia de Software Mobile.
 
+## ⚙️ Link do App Funcionando 
+
+https://drive.google.com/file/d/1oHjMAcptHRGk_IJTTIA7d89AP6cQmnyX/view?usp=sharing
+
 ---
 
 ## 📱 Recursos Nativos e Atendimento ao Code Challenge
